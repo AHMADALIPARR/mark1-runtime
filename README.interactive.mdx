@@ -1,0 +1,115 @@
+<!--
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+mark1-runtime
+Copyright (C) 2026 SnapKitty Collective
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+---
+title: "MARK-I // NEURAL RUNTIME"
+theme: cyberpunk
+repo: https://github.com/AHMADALIPARR/mark1-runtime
+---
+
+import { Hero, AssertionTicker, AttentionHeatmap, ArchStack, BenchBars, TargetMatrix, LicenseBlock } from './components/cyberpunk'
+
+<Hero
+  kicker="SOVEREIGN COMPUTE // HAND-ROLLED"
+  title="MARK-I"
+  sub="NEURAL RUNTIME"
+  tagline="No Python. Just Ada and arrays. A neural-network engine built from scratch in Ada 2007 — verified by raw assertion, nothing else."
+/>
+
+## The machine
+
+MARK-I is a complete neural runtime: array engine, perceptron, multilayer
+perceptron with backprop, convolutional nets, batch normalization, and
+multi-head attention — every line hand-rolled, every claim backed by a
+`pragma Assert` that actually ran.
+
+<AssertionTicker passed={69} total={69} label="assertions held" />
+
+## Multi-head attention, hand-rolled
+
+Scaled dot-product self-attention with learned $W_q, W_k, W_v$ per head and a
+learned output projection $W_o$. Semantic scores via $Q \cdot K / \sqrt{d_k}$,
+max-subtracted stable softmax, full backprop through every projection.
+
+<AttentionHeatmap
+  heads={2}
+  tokens={["doc 1", "doc 2", "doc 3", "doc 4"]}
+  scores={[
+    [0.4429, 0.0703, 0.4008, 0.0859],
+    [0.0297, 0.9090, 0.0321, 0.0291],
+    [0.1264, 0.1014, 0.1207, 0.6515],
+  ]}
+  note="Library-search demo: head 1 scores dims 1–4, so query 1 retrieves doc 3. Head 2 scores dims 5–8 and retrieves a different record. Rows sum to 1."
+/>
+
+Token-routing training (permutation targets, identity value path so only the
+scores must learn): **max error 8.9e-16** after 1500 epochs at `eta = 0.1`.
+Numeric gradient checks on `dWq` / `dWo` / `dX` agree to ~1e-10.
+
+## Architecture
+
+<ArchStack
+  layers={[
+    { name: "Mark1_K", desc: "K array engine — vectors, matrices, matmul, norms" },
+    { name: "Mark1_Rosenblatt", desc: "The perceptron, 1957 vintage" },
+    { name: "Mark1_Backprop + Mark1_Net", desc: "MLP with full backpropagation" },
+    { name: "Mark1_CNN", desc: "Convolutional nets, hand-rolled kernels" },
+    { name: "Mark1_BatchNorm", desc: "Per-feature normalize, learnable γ/β" },
+    { name: "Mark1_Attention", desc: "Multi-head self-attention + backprop" },
+    { name: "Mark1_GPU", desc: "Offload seam — CUDA bindings land here" },
+  ]}
+/>
+
+## Benchmarks
+
+<BenchBars
+  bars={[
+    { label: "attn fwd 2h/d32/t16", value: "0.21 ms" },
+    { label: "attn bwd 2h/d32/t16", value: "0.86 ms" },
+    { label: "attn fwd 4h/d64/t32", value: "1.74 ms" },
+    { label: "attn bwd 4h/d64/t32", value: "7.05 ms" },
+    { label: "matmul 128²", value: "1.85 GFLOPS" },
+    { label: "MLP step", value: "2.5 µs" },
+  ]}
+/>
+
+Verified numbers: XOR max abs err **0.0131** · sine MSE **2.3e-7** ·
+CNN analytic vs numeric gradient match to **9 digits**.
+
+## Targets
+
+<TargetMatrix
+  targets={[
+    { name: "x86-64", status: "VERIFIED", note: "Native GNAT 13, zero warnings" },
+    { name: "IBM Z s390x", status: "VERIFIED", note: "69/69 under qemu-s390x; gradients bit-identical" },
+    { name: "RTX 4090", status: "SEAM READY", note: "Mark1_GPU is the offload seam; CPU fallback today" },
+  ]}
+/>
+
+## Build & run
+
+```sh
+./build.sh
+```
+
+`gnatmake -gnat05 -gnata -gnatW8 -O2` — then the binary runs the full
+assertion suite itself.
+
+<LicenseBlock spdx="AGPL-3.0-or-later" holder="SnapKitty Collective" year="2026" />
